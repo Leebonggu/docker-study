@@ -1,0 +1,21 @@
+FROM maven:3.6-jdk-11 AS build
+WORKDIR /app
+
+COPY pom.xml .
+COPY src ./src
+
+# jar 생성
+RUN mvn clean package
+
+FROM openjdk:11-jre-slim
+WORKDIR /app
+
+## AS build로 명명된 곳에서부터 가져옴
+COPY --from=build /app/target/*.jar ./app.jar
+
+EXPOSE 8080
+
+CMD ["java", "-jar", "/app.jar"]
+
+# FROM이 2개일 경우, 컨테이너가 2개 생성됨
+# 첫번째 컨테이너에서 빌드하고, 두번째 컨테이너에서 실행함
